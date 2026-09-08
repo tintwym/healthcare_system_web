@@ -121,28 +121,29 @@ export const PatientLoginGate: React.FC<PatientLoginGateProps> = ({
         Sign in to view records, visits, billing, and secure care-team messages.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-3 text-xs">
-        <div>
-          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Email</label>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 text-xs">
+        <div className="space-y-1">
+          <label className="block font-bold text-slate-700 dark:text-slate-300">Email</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100"
+            className="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             autoComplete="username"
+            placeholder="name@email.com"
           />
         </div>
-        <div>
-          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Password</label>
+        <div className="space-y-1">
+          <label className="block font-bold text-slate-700 dark:text-slate-300">Password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100"
+            className="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             autoComplete="current-password"
-            placeholder="••••••••"
+            placeholder="Enter password"
           />
         </div>
 
@@ -155,7 +156,7 @@ export const PatientLoginGate: React.FC<PatientLoginGateProps> = ({
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold text-xs shadow-sm"
+          className="mt-1 w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold text-xs shadow-sm"
         >
           <Lock className="h-3.5 w-3.5" />
           {loading ? 'Signing in…' : 'Sign in'}
@@ -167,7 +168,7 @@ export const PatientLoginGate: React.FC<PatientLoginGateProps> = ({
           type="button"
           disabled={loading}
           onClick={staffDemo}
-          className="mt-3 w-full py-2 text-[11px] font-semibold text-teal-800 dark:text-teal-300 hover:underline"
+          className="mt-2.5 w-full py-2 text-[11px] font-semibold text-teal-800 dark:text-teal-300 hover:underline"
         >
           Staff demo: continue as Thiri Su Pyae
         </button>
