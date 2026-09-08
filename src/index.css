@@ -1,0 +1,419 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (must follow @import, before @theme) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --color-ink: #0a1628;
+  --color-ink-soft: #132337;
+  --color-surface: #f3f7f8;
+  --color-surface-elevated: #ffffff;
+  --color-accent: #0f766e;
+  --color-accent-bright: #14b8a6;
+  --color-accent-muted: #ccfbf1;
+  --color-line: #d7e2e6;
+}
+
+:root,
+html[data-theme="light"] {
+  color-scheme: light;
+  --mc-ink: #0a1628;
+  --mc-ink-soft: #132337;
+  --mc-surface: #f3f7f8;
+  --mc-elevated: #ffffff;
+  --mc-accent: #0f766e;
+  --mc-accent-bright: #14b8a6;
+  --mc-accent-muted: #ccfbf1;
+  --mc-line: #d7e2e6;
+  --mc-text: #0f172a;
+  --mc-muted: #64748b;
+  --mc-shell-tint: #eef5f6;
+}
+
+html.dark,
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --mc-ink: #060d16;
+  --mc-ink-soft: #0c1826;
+  --mc-surface: #070f1a;
+  --mc-elevated: #0f1c2e;
+  --mc-accent: #14b8a6;
+  --mc-accent-bright: #2dd4bf;
+  --mc-accent-muted: #134e4a;
+  --mc-line: #1e3348;
+  --mc-text: #e2e8f0;
+  --mc-muted: #94a3b8;
+  --mc-shell-tint: #070f1a;
+}
+
+html {
+  font-family: var(--font-sans);
+}
+
+body {
+  margin: 0;
+  background: var(--mc-surface);
+  color: var(--mc-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Atmospheric clinical shell — soft mesh, not flat white */
+.app-shell {
+  color: var(--mc-text);
+  background-color: var(--mc-surface);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 100% -10%, rgba(20, 184, 166, 0.14), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 0% 0%, rgba(14, 116, 144, 0.1), transparent 50%),
+    linear-gradient(180deg, var(--mc-shell-tint) 0%, var(--mc-surface) 28%, var(--mc-surface) 100%);
+}
+
+html.dark .app-shell {
+  background-image:
+    radial-gradient(ellipse 70% 45% at 100% -10%, rgba(20, 184, 166, 0.12), transparent 50%),
+    radial-gradient(ellipse 50% 35% at 0% 10%, rgba(15, 118, 110, 0.08), transparent 45%),
+    linear-gradient(180deg, var(--mc-surface) 0%, var(--mc-surface) 100%);
+}
+
+.app-viewport {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(20, 184, 166, 0.06), transparent 35%),
+    transparent;
+}
+
+.brand-mark {
+  background: linear-gradient(145deg, #0f766e 0%, #0e7490 100%);
+}
+
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid var(--mc-line);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--mc-elevated) 88%, transparent);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.kpi-strip > * {
+  padding: 1.25rem 1.35rem;
+  border-right: 1px solid var(--mc-line);
+}
+
+.kpi-strip > *:last-child {
+  border-right: none;
+}
+
+@media (max-width: 1023px) {
+  .kpi-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kpi-strip > *:nth-child(2) {
+    border-right: none;
+  }
+  .kpi-strip > *:nth-child(1),
+  .kpi-strip > *:nth-child(2) {
+    border-bottom: 1px solid var(--mc-line);
+  }
+}
+
+@media (max-width: 639px) {
+  .kpi-strip {
+    grid-template-columns: 1fr;
+  }
+  .kpi-strip > * {
+    border-right: none;
+    border-bottom: 1px solid var(--mc-line);
+  }
+  .kpi-strip > *:last-child {
+    border-bottom: none;
+  }
+}
+
+.panel {
+  background: color-mix(in srgb, var(--mc-elevated) 92%, transparent);
+  border: 1px solid var(--mc-line);
+  border-radius: 1rem;
+  backdrop-filter: blur(6px);
+  color: var(--mc-text);
+}
+
+.nav-group-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #64748b;
+  padding: 0.85rem 0.75rem 0.35rem;
+}
+
+html.dark .nav-group-label {
+  color: #64748b;
+}
+
+@keyframes brand-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.brand-lockup {
+  animation: brand-in 0.45s ease-out both;
+}
+
+@keyframes soft-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: soft-rise 0.5s ease-out both;
+}
+
+.rise-in-delay {
+  animation: soft-rise 0.55s ease-out 0.08s both;
+}
+
+/* —— Patient mobile / portal engagement surfaces —— */
+.pm-canvas {
+  background:
+    radial-gradient(ellipse 90% 60% at 100% -20%, rgba(20, 184, 166, 0.22), transparent 55%),
+    radial-gradient(ellipse 70% 50% at -10% 10%, rgba(14, 116, 144, 0.12), transparent 50%),
+    linear-gradient(180deg, #e8f4f4 0%, #f3f7f8 42%, #eef2f4 100%);
+  color: #0f172a;
+}
+
+html.dark .pm-canvas {
+  background:
+    radial-gradient(ellipse 90% 60% at 100% -20%, rgba(20, 184, 166, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 50% at -10% 10%, rgba(14, 116, 144, 0.1), transparent 50%),
+    linear-gradient(180deg, #0b1624 0%, #0f1c2e 42%, #0a1522 100%);
+  color: #e2e8f0;
+}
+
+.pm-brand-bar {
+  background:
+    linear-gradient(145deg, #0b4f4a 0%, #0f766e 48%, #0e7490 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.pm-brand-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.18), transparent 40%),
+    radial-gradient(circle at 10% 120%, rgba(15, 23, 42, 0.25), transparent 45%);
+  pointer-events: none;
+}
+
+@keyframes pm-pulse-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.pm-pulse-ring {
+  animation: pm-pulse-ring 1.6s ease-out infinite;
+}
+
+.portal-hero {
+  background:
+    radial-gradient(ellipse 70% 80% at 100% 0%, rgba(20, 184, 166, 0.16), transparent 55%),
+    radial-gradient(ellipse 50% 60% at 0% 100%, rgba(14, 116, 144, 0.1), transparent 50%),
+    color-mix(in srgb, var(--mc-elevated) 94%, transparent);
+  border: 1px solid var(--mc-line);
+  border-radius: 1.25rem;
+  backdrop-filter: blur(8px);
+  color: var(--mc-text);
+}
+
+.portal-tab-active {
+  background: linear-gradient(145deg, #0f766e, #0e7490);
+  color: white;
+  box-shadow: 0 8px 20px -10px rgba(15, 118, 110, 0.55);
+}
+
+/* Native selects — center chevron, consistent padding across the app */
+@layer components {
+  select.mc-select,
+  select:not([multiple]) {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center !important;
+    background-size: 0.9rem 0.9rem;
+    padding-right: 2.15rem !important;
+    line-height: 1.35;
+    vertical-align: middle;
+  }
+
+  select.mc-select-ghost,
+  select.bg-transparent {
+    background-color: transparent !important;
+    min-height: 1.75rem;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    padding-left: 0.15rem;
+    padding-right: 1.65rem;
+    background-position: right 0.15rem center;
+    background-size: 0.85rem 0.85rem;
+  }
+
+  html.dark select.mc-select,
+  html.dark select:not([multiple]) {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  }
+
+  html.dark select.mc-select-ghost,
+  html.dark select.bg-transparent {
+    background-color: transparent !important;
+  }
+
+  .mc-chip-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--mc-line);
+    background: color-mix(in srgb, var(--mc-elevated) 88%, #f8fafc);
+  }
+
+  html.dark .mc-chip-select {
+    background: color-mix(in srgb, var(--mc-elevated) 88%, #000);
+  }
+
+  .mc-chip-select select {
+    margin: 0;
+    border: 0;
+    box-shadow: none;
+    height: 1.5rem;
+  }
+}
+
+/*
+ * Remap common light-only Tailwind surfaces under dark mode.
+ * Backgrounds/borders only — avoid forcing text colors on tinted chips/badges.
+ */
+html.dark .bg-white {
+  background-color: var(--mc-elevated);
+}
+html.dark .bg-white\/60,
+html.dark .bg-white\/70,
+html.dark .bg-white\/75,
+html.dark .bg-white\/80,
+html.dark .bg-white\/90 {
+  background-color: color-mix(in srgb, var(--mc-elevated) 82%, transparent);
+}
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-50\/80,
+html.dark .bg-slate-50\/90 {
+  background-color: color-mix(in srgb, var(--mc-elevated) 72%, #000);
+}
+html.dark .bg-slate-100 {
+  background-color: color-mix(in srgb, var(--mc-elevated) 85%, #0f172a);
+}
+html.dark .bg-blue-50,
+html.dark .bg-blue-50\/80 {
+  background-color: color-mix(in srgb, #1e3a5f 55%, var(--mc-elevated));
+}
+html.dark .bg-rose-50,
+html.dark .bg-rose-50\/40 {
+  background-color: color-mix(in srgb, #4c0519 45%, var(--mc-elevated));
+}
+html.dark .bg-amber-50,
+html.dark .bg-amber-50\/40 {
+  background-color: color-mix(in srgb, #78350f 40%, var(--mc-elevated));
+}
+html.dark .bg-emerald-50 {
+  background-color: color-mix(in srgb, #064e3b 40%, var(--mc-elevated));
+}
+html.dark .border-white,
+html.dark .border-white\/80,
+html.dark .border-white\/90,
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-300 {
+  border-color: var(--mc-line);
+}
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200\/70 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--mc-line);
+}
+
+/* Text contrast for plain slate copy on remapped surfaces + phone simulator */
+html.dark .app-viewport .text-slate-900,
+html.dark .app-shell > main .text-slate-900,
+html.dark .pm-canvas .text-slate-900 {
+  color: #f1f5f9;
+}
+html.dark .app-viewport .text-slate-800,
+html.dark .app-shell > main .text-slate-800,
+html.dark .pm-canvas .text-slate-800 {
+  color: #e2e8f0;
+}
+html.dark .app-viewport .text-slate-700,
+html.dark .app-shell > main .text-slate-700,
+html.dark .pm-canvas .text-slate-700 {
+  color: #cbd5e1;
+}
+html.dark .app-viewport .text-slate-600,
+html.dark .app-shell > main .text-slate-600,
+html.dark .pm-canvas .text-slate-600 {
+  color: #94a3b8;
+}
+html.dark .app-viewport .text-slate-500,
+html.dark .app-shell > main .text-slate-500,
+html.dark .pm-canvas .text-slate-500,
+html.dark .app-viewport .text-slate-400,
+html.dark .app-shell > main .text-slate-400,
+html.dark .pm-canvas .text-slate-400 {
+  color: #94a3b8;
+}
+
+.pm-canvas {
+  background: var(--mc-surface);
+  color: var(--mc-text);
+}
+
+/* Light mode: ensure shell text never inherits a stuck dark scheme */
+html:not(.dark) .app-shell {
+  color: var(--mc-text);
+}
+html:not(.dark) body {
+  background: var(--mc-surface);
+  color: var(--mc-text);
+}
