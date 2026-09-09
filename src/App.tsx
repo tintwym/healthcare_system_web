@@ -19,6 +19,7 @@ import { StaffDirectory } from './components/staff/StaffDirectory';
 import { RadiologyImaging } from './components/radiology/RadiologyImaging';
 import { DischargeSummaryTool } from './components/discharge/DischargeSummaryTool';
 import { CareContinuityPanel } from './components/care/CareContinuityPanel';
+import { AnimatedPage } from './components/ui/AnimatedPage';
 import { MfaModal } from './components/mfa/MfaModal';
 import { SessionTimeoutGuard } from './components/security/SessionTimeoutGuard';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -178,30 +179,32 @@ const HospitalAppContent: React.FC = () => {
         {/* Scrollable Main Viewport */}
         <div className="app-viewport flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto space-y-6">
-            {activeTab === 'overview' && <AdminOverview />}
-            {activeTab === 'vitals' && <VitalsDashboard />}
-            {activeTab === 'patients' && <PatientRecords />}
-            {activeTab === 'pharmacy' && <PharmacistDashboard />}
-            {activeTab === 'cds' && <ClinicalDecisionSupport />}
-            {activeTab === 'shift-planning' && <ShiftPlanningDashboard />}
-            {activeTab === 'staff-directory' && (
-              <StaffDirectory
-                onOpenDirectMessage={(recipientUserId) => {
-                  setActiveMessageRecipientId(recipientUserId);
-                  setActiveTab('messages');
-                }}
-              />
-            )}
-            {activeTab === 'radiology' && <RadiologyImaging />}
-            {activeTab === 'discharge' && <DischargeSummaryTool />}
-            {activeTab === 'care-loop' && <CareContinuityPanel />}
-            {activeTab === 'patient-portal' && <PatientPortal />}
-            {activeTab === 'appointments' && <AppointmentScheduler />}
-            {activeTab === 'billing' && <BillingDashboard />}
-            {activeTab === 'hipaa' && <HipaaCompliance />}
-            {activeTab === 'ehr' && <EhrInteroperability />}
-            {activeTab === 'messages' && <SecureMessaging />}
-            {activeTab === 'mobile-portal' && <PatientMobileApp />}
+            <AnimatedPage id={activeTab}>
+              {activeTab === 'overview' && <AdminOverview />}
+              {activeTab === 'vitals' && <VitalsDashboard />}
+              {activeTab === 'patients' && <PatientRecords />}
+              {activeTab === 'pharmacy' && <PharmacistDashboard />}
+              {activeTab === 'cds' && <ClinicalDecisionSupport />}
+              {activeTab === 'shift-planning' && <ShiftPlanningDashboard />}
+              {activeTab === 'staff-directory' && (
+                <StaffDirectory
+                  onOpenDirectMessage={(recipientUserId) => {
+                    setActiveMessageRecipientId(recipientUserId);
+                    setActiveTab('messages');
+                  }}
+                />
+              )}
+              {activeTab === 'radiology' && <RadiologyImaging />}
+              {activeTab === 'discharge' && <DischargeSummaryTool />}
+              {activeTab === 'care-loop' && <CareContinuityPanel />}
+              {activeTab === 'patient-portal' && <PatientPortal />}
+              {activeTab === 'appointments' && <AppointmentScheduler />}
+              {activeTab === 'billing' && <BillingDashboard />}
+              {activeTab === 'hipaa' && <HipaaCompliance />}
+              {activeTab === 'ehr' && <EhrInteroperability />}
+              {activeTab === 'messages' && <SecureMessaging />}
+              {activeTab === 'mobile-portal' && <PatientMobileApp />}
+            </AnimatedPage>
           </div>
         </div>
 

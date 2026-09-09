@@ -11,6 +11,8 @@ import { useHospital } from '../../context/HospitalContext';
 import { McSelect } from '../ui/McSelect';
 import { StaffApiLogin, readStaffUser } from '../staff/StaffApiLogin';
 import { api, getApiToken } from '../../lib/api';
+import { motion } from 'motion/react';
+import { fadeUp, staggerContainer } from '../ui/AnimatedPage';
 
 type VisitSummaryRow = {
   id: string;
@@ -145,8 +147,17 @@ export const CareContinuityPanel: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+    <motion.div
+      className="space-y-6"
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+    >
+      <motion.div
+        variants={fadeUp}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4"
+      >
         <div>
           <h2 className="text-lg font-semibold text-[var(--mc-text)] flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-teal-600" />
@@ -167,9 +178,13 @@ export const CareContinuityPanel: React.FC = () => {
             }}
           />
         </div>
-      </div>
+      </motion.div>
 
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+      <motion.div
+        variants={fadeUp}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end"
+      >
         <div className="flex-1">
           <div className="text-[11px] font-bold uppercase tracking-wide text-[var(--mc-muted)] mb-1">
             Patient
@@ -192,22 +207,34 @@ export const CareContinuityPanel: React.FC = () => {
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </button>
-      </div>
+      </motion.div>
 
       {error && (
-        <div className="flex items-start gap-2 text-sm text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl px-3 py-2">
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-2 text-sm text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl px-3 py-2"
+        >
           <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
           {error}
-        </div>
+        </motion.div>
       )}
       {notice && (
-        <div className="flex items-start gap-2 text-sm text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 rounded-xl px-3 py-2">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex items-start gap-2 text-sm text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 rounded-xl px-3 py-2"
+        >
           <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
           {notice}
-        </div>
+        </motion.div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <motion.div
+        variants={fadeUp}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="grid grid-cols-1 xl:grid-cols-2 gap-6"
+      >
         <form
           onSubmit={publish}
           className="rounded-2xl border border-[var(--mc-line)] bg-[var(--mc-elevated)] p-5 space-y-4"
@@ -339,7 +366,7 @@ export const CareContinuityPanel: React.FC = () => {
             </ul>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };

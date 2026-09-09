@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import {
   LayoutDashboard,
   Users,
@@ -259,11 +260,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     }
 
     return (
-      <button
+      <motion.button
         key={item.id}
         id={`nav-tab-${item.id}`}
+        type="button"
         onClick={() => setActiveTab(item.id)}
-        className={`w-full px-3 py-2 rounded-lg flex items-center justify-between text-left transition-all duration-200 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/40 ${
+        whileHover={{ x: 2 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+        className={`w-full px-3 py-2 rounded-lg flex items-center justify-between text-left transition-colors duration-200 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/40 ${
           isActive
             ? 'bg-teal-500/15 text-teal-200 ring-1 ring-teal-400/30'
             : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
@@ -295,7 +300,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
             {item.badge}
           </span>
         )}
-      </button>
+      </motion.button>
     );
   };
 
