@@ -110,6 +110,20 @@ export const api = {
       body: JSON.stringify({ status }),
     }),
   pharmacyQueue: () => request<unknown[]>('/refills/pharmacy/queue'),
+  listMedDoses: (patientId?: string) =>
+    request<unknown[]>(
+      patientId ? `/med-doses?patientId=${encodeURIComponent(patientId)}` : '/med-doses'
+    ),
+  logMedDose: (body: Record<string, unknown>) =>
+    request<unknown>('/med-doses', { method: 'POST', body: JSON.stringify(body) }),
+  listVisitSummaries: (patientId?: string) =>
+    request<unknown[]>(
+      patientId
+        ? `/visit-summaries?patientId=${encodeURIComponent(patientId)}`
+        : '/visit-summaries'
+    ),
+  createVisitSummary: (body: Record<string, unknown>) =>
+    request<unknown>('/visit-summaries', { method: 'POST', body: JSON.stringify(body) }),
   listVitals: (patientId?: string) =>
     request<unknown[]>(
       patientId ? `/vitals?patientId=${encodeURIComponent(patientId)}` : '/vitals'

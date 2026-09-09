@@ -18,6 +18,7 @@ import { ShiftPlanningDashboard } from './components/roster/ShiftPlanningDashboa
 import { StaffDirectory } from './components/staff/StaffDirectory';
 import { RadiologyImaging } from './components/radiology/RadiologyImaging';
 import { DischargeSummaryTool } from './components/discharge/DischargeSummaryTool';
+import { CareContinuityPanel } from './components/care/CareContinuityPanel';
 import { MfaModal } from './components/mfa/MfaModal';
 import { SessionTimeoutGuard } from './components/security/SessionTimeoutGuard';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -58,7 +59,7 @@ const HospitalAppContent: React.FC = () => {
         setActiveTab('patient-portal');
       }
     } else if (currentUser.role === 'pharmacist') {
-      if (!['pharmacy', 'patients', 'vitals', 'cds', 'appointments', 'messages', 'hipaa', 'shift-planning', 'staff-directory'].includes(activeTab)) {
+      if (!['pharmacy', 'patients', 'vitals', 'cds', 'appointments', 'messages', 'hipaa', 'shift-planning', 'staff-directory', 'care-loop'].includes(activeTab)) {
         setActiveTab('pharmacy');
       }
     }
@@ -110,6 +111,7 @@ const HospitalAppContent: React.FC = () => {
     'staff-directory': 'Care Team Directory',
     radiology: 'Radiology & Imaging (DICOM)',
     discharge: 'Automated Discharge Summaries',
+    'care-loop': 'Care Loop — AVS & Adherence',
     'patient-portal': 'Patient Self-Service Health Portal',
     appointments: 'Appointment Scheduler',
     billing: 'Automated Billing & Claims',
@@ -192,6 +194,7 @@ const HospitalAppContent: React.FC = () => {
             )}
             {activeTab === 'radiology' && <RadiologyImaging />}
             {activeTab === 'discharge' && <DischargeSummaryTool />}
+            {activeTab === 'care-loop' && <CareContinuityPanel />}
             {activeTab === 'patient-portal' && <PatientPortal />}
             {activeTab === 'appointments' && <AppointmentScheduler />}
             {activeTab === 'billing' && <BillingDashboard />}

@@ -17,6 +17,7 @@ import {
   Contact,
   Scan,
   ClipboardList,
+  HeartPulse,
   type LucideIcon,
 } from 'lucide-react';
 import { useHospital } from '../context/HospitalContext';
@@ -31,6 +32,7 @@ export type TabType =
   | 'staff-directory'
   | 'radiology'
   | 'discharge'
+  | 'care-loop'
   | 'appointments'
   | 'billing'
   | 'hipaa'
@@ -118,6 +120,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           subtitle: 'Continuity of care',
           icon: ClipboardList,
           allowedRoles: ['doctor', 'nurse', 'admin'],
+        },
+        {
+          id: 'care-loop',
+          label: 'Care Loop',
+          subtitle: 'AVS & med adherence',
+          icon: HeartPulse,
+          allowedRoles: ['doctor', 'nurse', 'admin', 'pharmacist'],
         },
         {
           id: 'pharmacy',

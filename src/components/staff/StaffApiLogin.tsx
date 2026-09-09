@@ -19,14 +19,17 @@ export function clearStaffSession() {
 interface StaffApiLoginProps {
   allowedRoles?: string[];
   onAuthed?: (user: ApiUser) => void;
+  /** Prefill email (defaults to pharmacy demo account). */
+  defaultEmail?: string;
 }
 
 /** Compact staff sign-in against Medicore API (roles: doctor, pharmacist, admin, …). */
 export const StaffApiLogin: React.FC<StaffApiLoginProps> = ({
   allowedRoles,
   onAuthed,
+  defaultEmail = 'khin.sandar@medicore.mm',
 }) => {
-  const [email, setEmail] = useState('khin.sandar@medicore.mm');
+  const [email, setEmail] = useState(defaultEmail);
   const [password, setPassword] = useState('staff123');
   const [user, setUser] = useState<ApiUser | null>(() =>
     getApiToken() ? readStaffUser() : null
