@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard,
@@ -24,8 +24,8 @@ import {
 } from 'lucide-react';
 import { useHospital } from '../context/HospitalContext';
 
-/** Primary groups stay open; secondary collapse by default for calmer nav. */
-const PRIMARY_NAV_GROUPS = new Set(['care-delivery', 'operations']);
+/** Home + clinical stay open; secondary groups collapse by default. */
+const PRIMARY_NAV_GROUPS = new Set(['home', 'care-delivery', 'operations']);
 
 export type TabType =
   | 'overview'
@@ -86,13 +86,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
   const navGroups: NavGroup[] = [
     {
+      id: 'home',
+      label: 'Home',
+      items: [
+        {
+          id: 'overview',
+          label: 'Dashboard',
+          subtitle: 'Hospital overview',
+          icon: LayoutDashboard,
+          allowedRoles: ['admin', 'doctor', 'nurse', 'billing'],
+        },
+      ],
+    },
+    {
       id: 'care-delivery',
       label: 'Care Delivery',
       items: [
         {
           id: 'vitals',
-          label: 'Vitals & Trends',
-          subtitle: 'Multi-parameter monitoring',
+          label: 'Vitals',
+          subtitle: 'Live monitoring & trends',
           icon: Activity,
           allowedRoles: ['doctor', 'nurse', 'admin', 'pharmacist'],
           badge: unreadAlertCount > 0 ? `${unreadAlertCount}` : undefined,
@@ -100,15 +113,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         },
         {
           id: 'patients',
-          label: 'Patient Records',
-          subtitle: 'EHR, labs & notes',
+          label: 'Patients',
+          subtitle: 'Records, labs & notes',
           icon: Users,
           allowedRoles: ['doctor', 'nurse', 'admin', 'pharmacist'],
         },
         {
           id: 'radiology',
           label: 'Radiology',
-          subtitle: 'DICOM & annotations',
+          subtitle: 'Imaging & annotations',
           icon: Scan,
           allowedRoles: ['doctor', 'nurse', 'admin'],
         },
@@ -122,21 +135,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         {
           id: 'discharge',
           label: 'Discharge',
-          subtitle: 'Continuity of care',
+          subtitle: 'Summaries & handoff',
           icon: ClipboardList,
           allowedRoles: ['doctor', 'nurse', 'admin'],
         },
         {
           id: 'care-loop',
           label: 'Care Loop',
-          subtitle: 'AVS & med adherence',
+          subtitle: 'Visit summaries & meds',
           icon: HeartPulse,
           allowedRoles: ['doctor', 'nurse', 'admin', 'pharmacist'],
         },
         {
           id: 'pharmacy',
           label: 'Pharmacy',
-          subtitle: 'Rx & formulary',
+          subtitle: 'Prescriptions & formulary',
           icon: Pill,
           allowedRoles: ['pharmacist', 'doctor', 'nurse', 'admin'],
           badge: pendingRxCount > 0 ? `${pendingRxCount}` : undefined,
@@ -149,11 +162,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       label: 'Operations',
       items: [
         {
-          id: 'overview',
-          label: 'Network Overview',
-          subtitle: 'Care network metrics',
-          icon: LayoutDashboard,
-          allowedRoles: ['admin', 'doctor', 'nurse', 'billing'],
+          id: 'appointments',
+          label: 'Appointments',
+          subtitle: 'Scheduling & triage',
+          icon: Calendar,
+          allowedRoles: ['admin', 'doctor', 'nurse', 'billing', 'patient', 'pharmacist'],
         },
         {
           id: 'shift-planning',
@@ -165,21 +178,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         {
           id: 'staff-directory',
           label: 'Care Team',
-          subtitle: 'Directory & status',
+          subtitle: 'Staff directory',
           icon: Contact,
           allowedRoles: ['admin', 'doctor', 'nurse', 'pharmacist', 'billing', 'patient'],
         },
         {
-          id: 'appointments',
-          label: 'Appointments',
-          subtitle: 'Scheduling & triage',
-          icon: Calendar,
-          allowedRoles: ['admin', 'doctor', 'nurse', 'billing', 'patient', 'pharmacist'],
-        },
-        {
           id: 'messages',
-          label: 'Secure Messages',
-          subtitle: 'Encrypted care chat',
+          label: 'Messages',
+          subtitle: 'Secure care chat',
           icon: MessageSquare,
           allowedRoles: ['admin', 'doctor', 'nurse', 'billing', 'patient', 'pharmacist'],
           badge: unreadMessagesCount > 0 ? `${unreadMessagesCount}` : undefined,
@@ -193,8 +199,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       items: [
         {
           id: 'billing',
-          label: 'Billing & Claims',
-          subtitle: 'EDI & statements',
+          label: 'Billing',
+          subtitle: 'Claims & statements',
           icon: CreditCard,
           allowedRoles: ['billing', 'admin', 'doctor', 'patient'],
         },
@@ -222,19 +228,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     },
     {
       id: 'engagement',
-      label: 'Engagement',
+      label: 'Patient Access',
       items: [
         {
           id: 'patient-portal',
           label: 'Patient Portal',
-          subtitle: 'Self-service health',
+          subtitle: 'Web self-service',
           icon: UserCheck,
           allowedRoles: ['patient', 'admin', 'doctor'],
         },
         {
           id: 'mobile-portal',
           label: 'Patient Mobile',
-          subtitle: 'App + vitals monitor',
+          subtitle: 'App & monitoring',
           icon: Smartphone,
           allowedRoles: ['admin', 'patient', 'doctor', 'nurse'],
         },

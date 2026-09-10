@@ -27,7 +27,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onOpenNotifications,
   onOpenEmergencyModal,
-  activeTabTitle = 'Clinical Overview',
+  activeTabTitle = 'Dashboard',
   onToggleMobileSidebar,
 }) => {
   const {

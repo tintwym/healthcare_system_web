@@ -265,7 +265,7 @@ export const AdminOverview: React.FC = () => {
       <div className="rise-in flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div className="max-w-xl">
           <h1 className="font-display text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-slate-50 tracking-tight">
-            {greeting} — hospital overview
+            {greeting}. Here&apos;s your hospital overview
           </h1>
           <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
             Track patient care, operations, and performance in real time.
