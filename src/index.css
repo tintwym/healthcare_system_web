@@ -150,7 +150,8 @@ html.dark .app-shell {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #64748b;
-  padding: 0.85rem 0.75rem 0.35rem;
+  padding: 0.65rem 0.75rem 0.35rem;
+  cursor: pointer;
 }
 
 html.dark .nav-group-label {

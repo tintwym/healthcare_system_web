@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard,
   Users,
@@ -19,9 +19,13 @@ import {
   Scan,
   ClipboardList,
   HeartPulse,
+  ChevronDown,
   type LucideIcon,
 } from 'lucide-react';
 import { useHospital } from '../context/HospitalContext';
+
+/** Primary groups stay open; secondary collapse by default for calmer nav. */
+const PRIMARY_NAV_GROUPS = new Set(['care-delivery', 'operations']);
 
 export type TabType =
   | 'overview'
@@ -238,6 +242,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     },
   ];
 
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    navGroups.forEach((g) => {
+      initial[g.id] = PRIMARY_NAV_GROUPS.has(g.id);
+    });
+    return initial;
+  });
+
+  // Keep the group that owns the active tab expanded.
+  useEffect(() => {
+    const owner = navGroups.find((g) => g.items.some((i) => i.id === activeTab));
+    if (!owner) return;
+    setOpenGroups((prev) => (prev[owner.id] ? prev : { ...prev, [owner.id]: true }));
+    // navGroups is rebuilt each render; only react to tab changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  const toggleGroup = (id: string) => {
+    setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   const renderItem = (item: NavItem) => {
     const isAllowed = item.allowedRoles.includes(role);
     const isActive = activeTab === item.id;
@@ -306,7 +331,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
   return (
     <aside className="w-[17rem] lg:w-72 text-slate-300 flex flex-col shrink-0 h-full border-r border-white/5 bg-[var(--mc-ink)] relative overflow-hidden">
-      {/* Sidebar atmosphere */}
       <div
         className="pointer-events-none absolute inset-0 opacity-40"
         style={{
@@ -315,7 +339,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         }}
       />
 
-      {/* Brand lockup — hero-level in nav */}
       <div className="brand-lockup relative z-10 px-5 pt-6 pb-5 border-b border-white/8">
         <div className="flex items-start gap-3">
           <div className="w-11 h-11 rounded-xl shrink-0 shadow-[0_8px_24px_rgba(15,118,110,0.35)] overflow-hidden ring-1 ring-white/10">
@@ -343,14 +366,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
 
       <nav className="relative z-10 flex-1 px-3 py-2 overflow-y-auto">
         {navGroups.map((group) => {
-          const visible = group.items.some((i) => i.allowedRoles.includes(role));
-          if (!visible && role !== 'admin') {
-            // Still show locked groups lightly for RBAC demo when any item exists
-          }
+          const isOpen = openGroups[group.id] ?? PRIMARY_NAV_GROUPS.has(group.id);
+          const hasActive = group.items.some((i) => i.id === activeTab);
           return (
             <div key={group.id} className="mb-1">
-              <div className="nav-group-label">{group.label}</div>
-              <div className="space-y-0.5">{group.items.map(renderItem)}</div>
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.id)}
+                className={`nav-group-label w-full flex items-center justify-between gap-2 text-left rounded-md px-1 py-0.5 hover:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/40 ${
+                  hasActive ? 'text-teal-400/90' : ''
+                }`}
+                aria-expanded={isOpen}
+              >
+                <span>{group.label}</span>
+                <ChevronDown
+                  className={`h-3 w-3 shrink-0 text-slate-600 transition-transform duration-200 ${
+                    isOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    key={`${group.id}-items`}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-0.5 pb-1">{group.items.map(renderItem)}</div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}

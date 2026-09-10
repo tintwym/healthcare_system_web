@@ -129,7 +129,8 @@ export const PatientLoginGate: React.FC<PatientLoginGateProps> = ({
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            disabled={loading}
+            className="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 disabled:opacity-60"
             autoComplete="username"
             placeholder="name@email.com"
           />
@@ -141,7 +142,8 @@ export const PatientLoginGate: React.FC<PatientLoginGateProps> = ({
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            disabled={loading}
+            className="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 disabled:opacity-60"
             autoComplete="current-password"
             placeholder="Enter password"
           />
@@ -156,7 +158,8 @@ export const PatientLoginGate: React.FC<PatientLoginGateProps> = ({
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold text-xs shadow-sm"
+          aria-busy={loading}
+          className="mt-1 w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-xs shadow-sm"
         >
           <Lock className="h-3.5 w-3.5" />
           {loading ? 'Signing in…' : 'Sign in'}
@@ -168,7 +171,7 @@ export const PatientLoginGate: React.FC<PatientLoginGateProps> = ({
           type="button"
           disabled={loading}
           onClick={staffDemo}
-          className="mt-2.5 w-full py-2 text-[11px] font-semibold text-teal-800 dark:text-teal-300 hover:underline"
+          className="mt-2.5 w-full py-2.5 rounded-lg border border-teal-200 dark:border-teal-800 text-[11px] font-semibold text-teal-800 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/30 disabled:opacity-60"
         >
           Staff demo: continue as Thiri Su Pyae
         </button>

@@ -39,10 +39,15 @@ export const StaffApiLogin: React.FC<StaffApiLoginProps> = ({
 
   const login = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed || !password) {
+      setError('Enter staff email and password.');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const { token, user: u } = await api.login(email.trim(), password);
+      const { token, user: u } = await api.login(trimmed, password);
       if (allowedRoles && !allowedRoles.includes(u.role)) {
         setApiToken(null);
         setError(`Role ${u.role} not allowed here`);
@@ -86,31 +91,43 @@ export const StaffApiLogin: React.FC<StaffApiLoginProps> = ({
   return (
     <form
       onSubmit={login}
-      className="flex flex-wrap items-end gap-2 p-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/40 text-[11px]"
+      className="flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-2 p-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/40 text-[11px]"
     >
-      <div>
-        <label className="block font-bold text-slate-600 dark:text-slate-300 mb-0.5">Staff email</label>
+      <div className="w-full sm:w-auto min-w-0 flex-1">
+        <label className="block font-bold text-slate-600 dark:text-slate-300 mb-0.5">
+          Staff email
+        </label>
         <input
+          type="email"
+          required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="px-2 py-1.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+          autoComplete="username"
+          disabled={loading}
+          className="w-full px-2 py-1.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 disabled:opacity-60"
         />
       </div>
-      <div>
-        <label className="block font-bold text-slate-600 dark:text-slate-300 mb-0.5">Password</label>
+      <div className="w-full sm:w-auto">
+        <label className="block font-bold text-slate-600 dark:text-slate-300 mb-0.5">
+          Password
+        </label>
         <input
           type="password"
+          required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="px-2 py-1.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+          autoComplete="current-password"
+          disabled={loading}
+          className="w-full px-2 py-1.5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 disabled:opacity-60"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="px-3 py-1.5 rounded-lg bg-teal-600 text-white font-bold disabled:opacity-60"
+        aria-busy={loading}
+        className="w-full sm:w-auto px-3 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold disabled:opacity-60"
       >
-        {loading ? '…' : 'API sign-in'}
+        {loading ? 'Signing in…' : 'API sign-in'}
       </button>
       {error && <span className="text-rose-600 w-full">{error}</span>}
     </form>
