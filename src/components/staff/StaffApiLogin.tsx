@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api, getApiToken, setApiToken, type ApiUser } from '../../lib/api';
+import { requestApiRefresh } from '../../context/HospitalApiBridge';
 
 const STAFF_USER_KEY = 'medicore_staff_user';
 
@@ -57,6 +58,7 @@ export const StaffApiLogin: React.FC<StaffApiLoginProps> = ({
       localStorage.setItem(STAFF_USER_KEY, JSON.stringify(u));
       setUser(u);
       onAuthed?.(u);
+      requestApiRefresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -73,6 +75,7 @@ export const StaffApiLogin: React.FC<StaffApiLoginProps> = ({
     setApiToken(null);
     clearStaffSession();
     setUser(null);
+    requestApiRefresh();
   };
 
   if (user) {

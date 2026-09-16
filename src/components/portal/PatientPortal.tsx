@@ -73,7 +73,7 @@ export const PatientPortal: React.FC = () => {
   const [activePatientId, setActivePatientId] = useState<string>(
     () => readPatientSession()?.patientId || 'pat-001'
   );
-  const mockPatient = patients.find((p) => p.id === activePatientId) || patients[0];
+  const contextPatient = patients.find((p) => p.id === activePatientId);
   const patientUserId = session?.patientUserId || DEMO_PATIENT_USER_ID;
   const isStaffViewer = currentUser.role !== 'patient';
 
@@ -118,23 +118,46 @@ export const PatientPortal: React.FC = () => {
   const [profileEcRel, setProfileEcRel] = useState('');
   const [profileSaved, setProfileSaved] = useState(false);
 
-  // Prefer API lists only for the authenticated patient (staff demo switch uses mock).
   const useApiLists = Boolean(
     apiReady && (!isStaffViewer || activePatientId === session?.patientId)
   );
-  const patient =
-    useApiLists && apiPatient && apiPatient.id === activePatientId ? apiPatient : mockPatient;
+  const patient: PatientRecord | undefined =
+    useApiLists && apiPatient && apiPatient.id === activePatientId
+      ? apiPatient
+      : contextPatient;
+  const resolvedPatientId = patient?.id ?? activePatientId;
   const patientAppointments = useApiLists && apiAppointments
     ? apiAppointments
-    : appointments.filter((a) => a.patientId === patient.id);
+    : appointments.filter((a) => a.patientId === resolvedPatientId);
   const patientInvoices = useApiLists && apiInvoices
     ? apiInvoices
-    : invoices.filter((inv) => inv.patientId === patient.id);
+    : invoices.filter((inv) => inv.patientId === resolvedPatientId);
   const portalMessages = useApiLists && apiMessages ? apiMessages : messages;
   const invoiceBalance = (inv: Invoice) =>
     Math.max(0, inv.patientResponsibility - inv.amountPaid);
   const totalBalanceDue = patientInvoices.reduce((acc, inv) => acc + invoiceBalance(inv), 0);
-  const latestVital = patient.vitals[patient.vitals.length - 1];
+  const latestVital = patient?.vitals[patient.vitals.length - 1];
+
+  if (!session) {
+    return (
+      <PatientLoginGate
+        allowStaffDemo={isStaffViewer}
+        onAuthenticated={(s) => {
+          setSession(s);
+          setActivePatientId(s.patientId);
+        }}
+      />
+    );
+  }
+
+  if (!patient) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center space-y-3">
+        <RefreshCw className="h-8 w-8 text-teal-600 animate-spin" />
+        <p className="text-sm text-slate-600 dark:text-slate-400">Loading patient records from API…</p>
+      </div>
+    );
+  }
 
   // Handlers
   const handleScheduleAppointment = async (e: React.FormEvent) => {
@@ -306,18 +329,6 @@ export const PatientPortal: React.FC = () => {
       setActionError(err instanceof Error ? err.message : 'Could not save profile.');
     }
   };
-
-  if (!session) {
-    return (
-      <PatientLoginGate
-        allowStaffDemo={isStaffViewer}
-        onAuthenticated={(s) => {
-          setSession(s);
-          setActivePatientId(s.patientId);
-        }}
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">

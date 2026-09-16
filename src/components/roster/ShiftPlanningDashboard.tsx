@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { useHospital } from '../../context/HospitalContext';
 import { Shift, ShiftType, TimeOffRequest } from '../../types';
-import { DEPARTMENT_STAFFING_REQUIREMENTS } from '../../data/staffAndRosterData';
+import { DEPARTMENT_STAFFING_REQUIREMENTS } from '../../data/clinicalReference';
 import { McSelect } from '../ui/McSelect';
 
 export const ShiftPlanningDashboard: React.FC = () => {

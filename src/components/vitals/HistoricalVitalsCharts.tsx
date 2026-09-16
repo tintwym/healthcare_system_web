@@ -29,8 +29,31 @@ import {
   Info,
   Layers,
 } from 'lucide-react';
-import { generatePatientHistoricalVitals } from '../../data/staffAndRosterData';
 import { PatientRecord } from '../../types';
+
+function mapVitalsForChart(patient: PatientRecord, timeframeDays: number) {
+  const cutoff = Date.now() - timeframeDays * 24 * 60 * 60 * 1000;
+  return patient.vitals
+    .filter((v) => new Date(v.timestamp).getTime() >= cutoff)
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+    .map((v) => {
+      const d = new Date(v.timestamp);
+      return {
+        timestamp: v.timestamp,
+        timeLabel: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        dateLabel: d.toLocaleDateString([], { month: 'short', day: 'numeric' }),
+        heartRate: v.heartRate,
+        bpSys: v.bloodPressureSys,
+        bpDia: v.bloodPressureDia,
+        map: Math.round(v.bloodPressureDia + (v.bloodPressureSys - v.bloodPressureDia) / 3),
+        spO2: v.spO2,
+        temp: v.temperature,
+        respRate: v.respRate,
+        isAbnormal: Boolean(v.isAbnormal),
+        notes: v.notes,
+      };
+    });
+}
 
 interface HistoricalVitalsChartsProps {
   patient: PatientRecord;
@@ -60,17 +83,8 @@ export const HistoricalVitalsCharts: React.FC<HistoricalVitalsChartsProps> = ({
   // Generate historical data points according to chosen timeframe
   const dataPoints = useMemo(() => {
     const days = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '14d' ? 14 : 30;
-
-    // Use current patient's latest vital as baseline guide
-    const latest = patient.vitals[patient.vitals.length - 1];
-    const baseBP = latest ? { sys: latest.bloodPressureSys, dia: latest.bloodPressureDia } : { sys: 124, dia: 80 };
-    const baseHR = latest?.heartRate || 74;
-    const baseSpO2 = latest?.spO2 || 98;
-    const baseTemp = latest?.temperature || 98.6;
-    const baseRR = latest?.respRate || 16;
-
-    return generatePatientHistoricalVitals(patient.id, days, baseBP, baseHR, baseSpO2, baseTemp, baseRR);
-  }, [patient.id, patient.vitals, timeframe]);
+    return mapVitalsForChart(patient, days);
+  }, [patient, timeframe]);
 
   // Statistical calculations across the historical window
   const stats = useMemo(() => {

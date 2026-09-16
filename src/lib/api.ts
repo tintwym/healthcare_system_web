@@ -54,10 +54,17 @@ export const api = {
     }),
   logout: () => request<{ ok: boolean }>('/auth/logout', { method: 'POST' }),
   me: () => request<ApiUser>('/auth/me'),
+  listPatients: () => request<Record<string, unknown>[]>('/patients'),
   patientMe: (patientId?: string) =>
     request<Record<string, unknown>>(
       patientId ? `/patients/me?patientId=${encodeURIComponent(patientId)}` : '/patients/me'
     ),
+  getPatient: (id: string) => request<Record<string, unknown>>(`/patients/${encodeURIComponent(id)}`),
+  listUsers: (role?: string) =>
+    request<Record<string, unknown>[]>(
+      role ? `/users?role=${encodeURIComponent(role)}` : '/users'
+    ),
+  listAuditEvents: () => request<Record<string, unknown>[]>('/audit/events'),
   updatePatientProfile: (body: Record<string, unknown>) =>
     request<Record<string, unknown>>('/patients/me', {
       method: 'PATCH',

@@ -204,10 +204,27 @@ export const AiAssistant: React.FC = () => {
 
       {!isPatientRole && (
         <motion.div variants={fadeUp} className="space-y-3">
+          {!getApiToken() && (
+            <div
+              className={`rounded-xl border px-4 py-3 text-sm ${
+                darkMode
+                  ? 'border-amber-500/40 bg-amber-950/40 text-amber-100'
+                  : 'border-amber-300 bg-amber-50 text-amber-950'
+              }`}
+            >
+              <p className="font-semibold">API sign-in required for Assist</p>
+              <p className="mt-1 text-[13px] opacity-90">
+                Switching roles in the hospital OS sidebar only changes the mock UI. Assist calls the
+                real backend, so sign in below (demo:{' '}
+                <code className="text-[12px]">aye.myatthu@medicore.mm</code> /{' '}
+                <code className="text-[12px]">staff123</code>).
+              </p>
+            </div>
+          )}
           <StaffApiLogin
             allowedRoles={['admin', 'doctor', 'nurse', 'pharmacist', 'billing']}
             onAuthed={() => setApiReady(true)}
-            defaultEmail="dr.chen@medicore.mm"
+            defaultEmail="aye.myatthu@medicore.mm"
           />
           <div className="flex flex-wrap items-center gap-3">
             <label className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
@@ -232,7 +249,9 @@ export const AiAssistant: React.FC = () => {
           variants={fadeUp}
           className="rounded-xl border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3 text-sm text-amber-900 dark:text-amber-100"
         >
-          Sign in through Patient Portal first so Assist can use your live chart and billing data.
+          Sign in through <strong>Patient Portal</strong> first (same email/password as the mobile
+          app) so Assist can use your live chart. The sidebar patient role alone does not create an
+          API session.
         </motion.div>
       )}
 

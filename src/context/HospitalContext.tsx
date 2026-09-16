@@ -23,28 +23,7 @@ import {
   DischargeSummary,
   OfflineCacheStatus,
 } from '../types';
-import {
-  INITIAL_USERS,
-  INITIAL_PATIENTS,
-  INITIAL_APPOINTMENTS,
-  INITIAL_INVOICES,
-  INITIAL_AUDIT_LOGS,
-  INITIAL_ALERTS,
-  INITIAL_MESSAGES,
-  INITIAL_EHR_INTEGRATIONS,
-} from '../data/mockData';
-import {
-  PHARMACIST_USER,
-  INITIAL_E_PRESCRIPTIONS,
-  INITIAL_PHARMACY_INVENTORY,
-} from '../data/pharmacyAndCdsData';
-import {
-  INITIAL_STAFF_MEMBERS,
-  INITIAL_SHIFTS,
-  INITIAL_TIMEOFF_REQUESTS,
-  INITIAL_EXPIRATION_NOTIFICATIONS,
-} from '../data/staffAndRosterData';
-import { INITIAL_DICOM_STUDIES } from '../data/radiologyData';
+import { readStaffUser } from '../components/staff/StaffApiLogin';
 import {
   syncCriticalClinicalData,
   subscribeOnlineStatus,
@@ -191,97 +170,82 @@ interface HospitalContextType {
   
   // Reset
   resetToDefault: () => void;
+
+  // Live API
+  apiConnected: boolean;
+  setApiConnected: (val: boolean) => void;
+  hydrateFromApi: (snapshot: {
+    patients: PatientRecord[];
+    appointments: Appointment[];
+    invoices: Invoice[];
+    messages: SecureMessage[];
+    auditLogs: AuditLog[];
+    users: User[];
+    currentUserId: string | null;
+  }) => void;
+  clearClinicalData: () => void;
 }
 
 const HospitalContext = createContext<HospitalContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'apex_hospital_os_v1';
 
+const GUEST_USER: User = {
+  id: 'guest',
+  name: 'Sign in required',
+  email: '',
+  role: 'admin',
+  department: 'Medicore API',
+  avatarUrl: '',
+  mfaEnabled: false,
+};
+
 export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [users] = useState<User[]>([...INITIAL_USERS, PHARMACIST_USER]);
-  const [currentUserId, setCurrentUserId] = useState<string>('u-1'); // Default to Dr. Aye Myat Thu
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string>(() => readStaffUser()?.id || 'guest');
+  const [apiConnected, setApiConnected] = useState(false);
   const [isMfaAuthenticated, setIsMfaAuthenticated] = useState<boolean>(true);
   const [mfaModalOpen, setMfaModalOpen] = useState<boolean>(false);
   const [deIdentifyPhi, setDeIdentifyPhi] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [mobileSimulatorOpen, setMobileSimulatorOpen] = useState<boolean>(false);
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>('pat-001');
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  // Load from localStorage or defaults
-  const [patients, setPatients] = useState<PatientRecord[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_patients`);
-    return saved ? JSON.parse(saved) : INITIAL_PATIENTS;
-  });
+  const [patients, setPatients] = useState<PatientRecord[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [alerts, setAlertS] = useState<UrgentAlert[]>([]);
+  const [messages, setMessages] = useState<SecureMessage[]>([]);
+  const [ehrIntegrations, setEhrIntegrations] = useState<EhrIntegration[]>([]);
+  const [ePrescriptions, setEPrescriptions] = useState<EPrescription[]>([]);
+  const [pharmacyInventory, setPharmacyInventory] = useState<PharmacyInventoryItem[]>([]);
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([]);
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
+  const [expirationNotifications, setExpirationNotifications] = useState<ExpirationNotification[]>([]);
+  const [dicomStudies, setDicomStudies] = useState<DicomStudy[]>([]);
+  const [dischargeSummaries, setDischargeSummaries] = useState<DischargeSummary[]>([]);
 
-  const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_appointments`);
-    return saved ? JSON.parse(saved) : INITIAL_APPOINTMENTS;
-  });
-
-  const [invoices, setInvoices] = useState<Invoice[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_invoices`);
-    return saved ? JSON.parse(saved) : INITIAL_INVOICES;
-  });
-
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_audit`);
-    return saved ? JSON.parse(saved) : INITIAL_AUDIT_LOGS;
-  });
-
-  const [alerts, setAlertS] = useState<UrgentAlert[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_alerts`);
-    return saved ? JSON.parse(saved) : INITIAL_ALERTS;
-  });
-
-  const [messages, setMessages] = useState<SecureMessage[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_messages`);
-    return saved ? JSON.parse(saved) : INITIAL_MESSAGES;
-  });
-
-  const [ehrIntegrations, setEhrIntegrations] = useState<EhrIntegration[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_ehr`);
-    return saved ? JSON.parse(saved) : INITIAL_EHR_INTEGRATIONS;
-  });
-
-  const [ePrescriptions, setEPrescriptions] = useState<EPrescription[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_eprescriptions`);
-    return saved ? JSON.parse(saved) : INITIAL_E_PRESCRIPTIONS;
-  });
-
-  const [pharmacyInventory, setPharmacyInventory] = useState<PharmacyInventoryItem[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_inventory`);
-    return saved ? JSON.parse(saved) : INITIAL_PHARMACY_INVENTORY;
-  });
-
-  const [shifts, setShifts] = useState<Shift[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_shifts`);
-    return saved ? JSON.parse(saved) : INITIAL_SHIFTS;
-  });
-
-  const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_timeoff`);
-    return saved ? JSON.parse(saved) : INITIAL_TIMEOFF_REQUESTS;
-  });
-
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_staff`);
-    return saved ? JSON.parse(saved) : INITIAL_STAFF_MEMBERS;
-  });
-
-  const [expirationNotifications, setExpirationNotifications] = useState<ExpirationNotification[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_exp_notifications`);
-    return saved ? JSON.parse(saved) : INITIAL_EXPIRATION_NOTIFICATIONS;
-  });
-
-  const [dicomStudies, setDicomStudies] = useState<DicomStudy[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_dicom`);
-    return saved ? JSON.parse(saved) : INITIAL_DICOM_STUDIES;
-  });
-
-  const [dischargeSummaries, setDischargeSummaries] = useState<DischargeSummary[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_discharge`);
-    return saved ? JSON.parse(saved) : [];
-  });
+  useEffect(() => {
+    [
+      'patients',
+      'appointments',
+      'invoices',
+      'audit',
+      'alerts',
+      'messages',
+      'ehr',
+      'eprescriptions',
+      'inventory',
+      'shifts',
+      'timeoff',
+      'staff',
+      'exp_notifications',
+      'dicom',
+      'discharge',
+    ].forEach((k) => localStorage.removeItem(`${STORAGE_KEY}_${k}`));
+  }, []);
 
   const [offlineStatus, setOfflineStatus] = useState<OfflineCacheStatus>({
     isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
@@ -294,66 +258,63 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [activeMessageRecipientId, setActiveMessageRecipientId] = useState<string | null>(null);
 
-  // Sync to local storage
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_patients`, JSON.stringify(patients));
-  }, [patients]);
+  const hydrateFromApi = (snapshot: {
+    patients: PatientRecord[];
+    appointments: Appointment[];
+    invoices: Invoice[];
+    messages: SecureMessage[];
+    auditLogs: AuditLog[];
+    users: User[];
+    currentUserId: string | null;
+  }) => {
+    setPatients(snapshot.patients);
+    setAppointments(snapshot.appointments);
+    setInvoices(snapshot.invoices);
+    setMessages(snapshot.messages);
+    setAuditLogs(snapshot.auditLogs);
+    setUsers(snapshot.users);
+    if (snapshot.currentUserId) setCurrentUserId(snapshot.currentUserId);
+    if (snapshot.patients.length > 0) {
+      setSelectedPatientId((prev) =>
+        prev && snapshot.patients.some((p) => p.id === prev) ? prev : snapshot.patients[0].id
+      );
+    }
+    setStaffMembers(
+      snapshot.users
+        .filter((u) => u.role !== 'patient')
+        .map((u) => ({
+          id: `staff-${u.id}`,
+          userId: u.id,
+          name: u.name,
+          credentials: u.licenseNumber || u.role.toUpperCase(),
+          role: u.role as StaffMember['role'],
+          department: u.department,
+          title: u.role,
+          specialty: u.department,
+          availabilityStatus: 'Available' as const,
+          email: u.email,
+          phone: '',
+          bleepNumber: '',
+          officeLocation: u.department,
+          licenseNumber: u.licenseNumber || '',
+          avatarUrl: u.avatarUrl,
+          skills: [],
+          languages: ['English'],
+        }))
+    );
+  };
 
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_appointments`, JSON.stringify(appointments));
-  }, [appointments]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_invoices`, JSON.stringify(invoices));
-  }, [invoices]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_audit`, JSON.stringify(auditLogs));
-  }, [auditLogs]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_eprescriptions`, JSON.stringify(ePrescriptions));
-  }, [ePrescriptions]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_inventory`, JSON.stringify(pharmacyInventory));
-  }, [pharmacyInventory]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_shifts`, JSON.stringify(shifts));
-  }, [shifts]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_timeoff`, JSON.stringify(timeOffRequests));
-  }, [timeOffRequests]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_staff`, JSON.stringify(staffMembers));
-  }, [staffMembers]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_exp_notifications`, JSON.stringify(expirationNotifications));
-  }, [expirationNotifications]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_dicom`, JSON.stringify(dicomStudies));
-  }, [dicomStudies]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_discharge`, JSON.stringify(dischargeSummaries));
-  }, [dischargeSummaries]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_alerts`, JSON.stringify(alerts));
-  }, [alerts]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_messages`, JSON.stringify(messages));
-  }, [messages]);
-
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_ehr`, JSON.stringify(ehrIntegrations));
-  }, [ehrIntegrations]);
+  const clearClinicalData = () => {
+    setPatients([]);
+    setAppointments([]);
+    setInvoices([]);
+    setMessages([]);
+    setAuditLogs([]);
+    setUsers([]);
+    setStaffMembers([]);
+    setSelectedPatientId(null);
+    setCurrentUserId('guest');
+  };
 
   // Subscribe to browser online/offline events for offline-first UX
   useEffect(() => {
@@ -407,7 +368,7 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     forceOfflinePreview,
   ]);
 
-  const currentUser = users.find((u) => u.id === currentUserId) || users[0];
+  const currentUser = users.find((u) => u.id === currentUserId) || users[0] || GUEST_USER;
 
   const logAudit = (
     action: AuditLog['action'],
@@ -1777,38 +1738,18 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const resetToDefault = () => {
-    localStorage.removeItem(`${STORAGE_KEY}_patients`);
-    localStorage.removeItem(`${STORAGE_KEY}_appointments`);
-    localStorage.removeItem(`${STORAGE_KEY}_invoices`);
-    localStorage.removeItem(`${STORAGE_KEY}_audit`);
-    localStorage.removeItem(`${STORAGE_KEY}_alerts`);
-    localStorage.removeItem(`${STORAGE_KEY}_messages`);
-    localStorage.removeItem(`${STORAGE_KEY}_ehr`);
-    localStorage.removeItem(`${STORAGE_KEY}_eprescriptions`);
-    localStorage.removeItem(`${STORAGE_KEY}_inventory`);
-    localStorage.removeItem(`${STORAGE_KEY}_shifts`);
-    localStorage.removeItem(`${STORAGE_KEY}_timeoff`);
-    localStorage.removeItem(`${STORAGE_KEY}_staff`);
-    localStorage.removeItem(`${STORAGE_KEY}_exp_notifications`);
-    localStorage.removeItem(`${STORAGE_KEY}_dicom`);
-    localStorage.removeItem(`${STORAGE_KEY}_discharge`);
-
-    setPatients(INITIAL_PATIENTS);
-    setAppointments(INITIAL_APPOINTMENTS);
-    setInvoices(INITIAL_INVOICES);
-    setAuditLogs(INITIAL_AUDIT_LOGS);
-    setAlertS(INITIAL_ALERTS);
-    setMessages(INITIAL_MESSAGES);
-    setEhrIntegrations(INITIAL_EHR_INTEGRATIONS);
-    setEPrescriptions(INITIAL_E_PRESCRIPTIONS);
-    setPharmacyInventory(INITIAL_PHARMACY_INVENTORY);
-    setShifts(INITIAL_SHIFTS);
-    setTimeOffRequests(INITIAL_TIMEOFF_REQUESTS);
-    setStaffMembers(INITIAL_STAFF_MEMBERS);
-    setExpirationNotifications(INITIAL_EXPIRATION_NOTIFICATIONS);
-    setDicomStudies(INITIAL_DICOM_STUDIES);
+    clearClinicalData();
+    setAlertS([]);
+    setEhrIntegrations([]);
+    setEPrescriptions([]);
+    setPharmacyInventory([]);
+    setShifts([]);
+    setTimeOffRequests([]);
+    setExpirationNotifications([]);
+    setDicomStudies([]);
     setDischargeSummaries([]);
     setActiveMessageRecipientId(null);
+    window.dispatchEvent(new Event('medicore:api-refresh'));
   };
 
   const unreadAlertCount = alerts.filter((a) => !a.acknowledged).length;
@@ -1900,6 +1841,10 @@ export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         orderDiagnosticTest,
         applyTreatmentGuideline,
         resetToDefault,
+        apiConnected,
+        setApiConnected,
+        hydrateFromApi,
+        clearClinicalData,
       }}
     >
       {children}

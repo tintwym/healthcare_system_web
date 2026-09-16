@@ -55,17 +55,18 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({ previewOnly 
   const patientUserId = session?.patientUserId || DEMO_PATIENT_USER_ID;
   const patientId = session?.patientId || apiPatient?.id || FALLBACK_PATIENT_ID;
 
-  const mockPatient = patients.find((p) => p.id === patientId) || patients[0];
-  const patient = apiReady && apiPatient ? apiPatient : mockPatient;
+  const contextPatient = patients.find((p) => p.id === patientId);
+  const patient = apiReady && apiPatient ? apiPatient : contextPatient;
+  const resolvedPatientId = patient?.id ?? patientId;
 
   const patientAppointments =
     apiReady && apiAppointments
       ? apiAppointments
-      : appointments.filter((a) => a.patientId === patient.id);
+      : appointments.filter((a) => a.patientId === resolvedPatientId);
   const patientInvoices =
     apiReady && apiInvoices
       ? apiInvoices
-      : invoices.filter((i) => i.patientId === patient.id);
+      : invoices.filter((i) => i.patientId === resolvedPatientId);
   const nextAppointment = useMemo(
     () =>
       patientAppointments.find(
@@ -81,7 +82,9 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({ previewOnly 
           (m) => m.senderId === patientUserId || m.recipientId === patientUserId
         );
 
-  const primaryDoctorId = resolvePrimaryDoctorId(patient.primaryDoctor, patientAppointments);
+  const primaryDoctorId = patient
+    ? resolvePrimaryDoctorId(patient.primaryDoctor, patientAppointments)
+    : '';
 
   const tabs: { id: PatientMobileTab; label: string; icon: React.ElementType }[] = [
     { id: 'home', label: 'Home', icon: Home },
@@ -120,6 +123,12 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({ previewOnly 
       )}
 
       <PhoneFrame>
+        {!patient ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center text-sm text-slate-500">
+            <p>Sign in to the patient portal to load live records.</p>
+          </div>
+        ) : (
+        <>
         <header className="pm-brand-bar px-4 pt-4 pb-5 text-white shrink-0">
           <div className="relative z-10 flex items-center justify-between">
             <div>
@@ -343,6 +352,8 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({ previewOnly 
             );
           })}
         </nav>
+        </>
+        )}
       </PhoneFrame>
     </div>
   );

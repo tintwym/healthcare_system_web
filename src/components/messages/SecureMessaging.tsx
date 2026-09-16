@@ -459,7 +459,7 @@ export const SecureMessaging: React.FC = () => {
             <div className="px-4 pb-2">
               <StaffApiLogin
                 allowedRoles={['admin', 'doctor', 'nurse', 'pharmacist', 'billing']}
-                defaultEmail="dr.chen@medicore.mm"
+                defaultEmail="aye.myatthu@medicore.mm"
               />
             </div>
           )}

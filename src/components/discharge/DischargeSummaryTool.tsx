@@ -392,7 +392,7 @@ export const DischargeSummaryTool: React.FC = () => {
 
       <StaffApiLogin
         allowedRoles={['admin', 'doctor', 'nurse']}
-        defaultEmail="dr.chen@medicore.mm"
+        defaultEmail="aye.myatthu@medicore.mm"
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HospitalProvider, useHospital } from './context/HospitalContext';
+import { HospitalApiBridge } from './context/HospitalApiBridge';
 import { Header } from './components/Header';
 import { Sidebar, TabType } from './components/Sidebar';
 import { AdminOverview } from './components/dashboard/AdminOverview';
@@ -432,7 +433,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <HospitalProvider>
-        <HospitalAppContent />
+        <HospitalApiBridge>
+          <HospitalAppContent />
+        </HospitalApiBridge>
       </HospitalProvider>
     </ThemeProvider>
   );

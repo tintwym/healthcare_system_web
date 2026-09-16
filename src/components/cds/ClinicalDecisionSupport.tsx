@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useHospital } from '../../context/HospitalContext';
 import { CdsAlert, TreatmentRecommendation, LabResult } from '../../types';
-import { INITIAL_TREATMENT_GUIDELINES } from '../../data/pharmacyAndCdsData';
+import { INITIAL_TREATMENT_GUIDELINES } from '../../data/clinicalReference';
 import { McSelect } from '../ui/McSelect';
 
 type DiagnosticCategory = LabResult['category'];
