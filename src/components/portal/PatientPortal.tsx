@@ -32,13 +32,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { Appointment, Invoice, PatientRecord } from '../../types';
 import { McSelect } from '../ui/McSelect';
 import { PushNotificationsToggle } from '../PushNotificationsToggle';
-import {
-  PatientLoginGate,
-  clearPatientSession,
-  readPatientSession,
-  type PatientSession,
-  DEMO_PATIENT_USER_ID,
-} from './PatientLoginGate';
+import { type PatientSession, DEMO_PATIENT_USER_ID } from './PatientLoginGate';
+import { useAuth } from '../../context/AuthContext';
 import { PatientMessagesPanel } from './PatientMessagesPanel';
 import { usePatientApiSession } from '../../hooks/usePatientApiSession';
 import { api } from '../../lib/api';
@@ -65,17 +60,26 @@ export const PatientPortal: React.FC = () => {
     logAudit,
   } = useHospital();
 
-  const [session, setSession] = useState<PatientSession | null>(() => readPatientSession());
+  const { user: authUser, logout: authLogout } = useAuth();
+  const patientSession: PatientSession | null =
+    authUser?.role === 'patient' && authUser.patientId
+      ? {
+          authenticated: true,
+          patientUserId: authUser.id,
+          patientId: authUser.patientId,
+          email: authUser.email,
+        }
+      : null;
   const { apiPatient, apiAppointments, apiInvoices, apiMessages, apiReady, refresh: refreshApi } =
-    usePatientApiSession(session);
+    usePatientApiSession(patientSession);
 
-  // Active patient selection (session patient by default; staff may demo-switch)
+  // Staff may preview another patient; patients always see their own chart.
   const [activePatientId, setActivePatientId] = useState<string>(
-    () => readPatientSession()?.patientId || 'pat-001'
+    () => authUser?.patientId || 'pat-001'
   );
   const contextPatient = patients.find((p) => p.id === activePatientId);
-  const patientUserId = session?.patientUserId || DEMO_PATIENT_USER_ID;
-  const isStaffViewer = currentUser.role !== 'patient';
+  const patientUserId = patientSession?.patientUserId || authUser?.id || DEMO_PATIENT_USER_ID;
+  const isStaffViewer = authUser?.role !== 'patient';
 
   // Active portal tab
   const [activeTab, setActiveTab] = useState<'records' | 'appointments' | 'billing' | 'messages'>('records');
@@ -119,7 +123,7 @@ export const PatientPortal: React.FC = () => {
   const [profileSaved, setProfileSaved] = useState(false);
 
   const useApiLists = Boolean(
-    apiReady && (!isStaffViewer || activePatientId === session?.patientId)
+    apiReady && (!isStaffViewer || activePatientId === patientSession?.patientId)
   );
   const patient: PatientRecord | undefined =
     useApiLists && apiPatient && apiPatient.id === activePatientId
@@ -137,18 +141,6 @@ export const PatientPortal: React.FC = () => {
     Math.max(0, inv.patientResponsibility - inv.amountPaid);
   const totalBalanceDue = patientInvoices.reduce((acc, inv) => acc + invoiceBalance(inv), 0);
   const latestVital = patient?.vitals[patient.vitals.length - 1];
-
-  if (!session) {
-    return (
-      <PatientLoginGate
-        allowStaffDemo={isStaffViewer}
-        onAuthenticated={(s) => {
-          setSession(s);
-          setActivePatientId(s.patientId);
-        }}
-      />
-    );
-  }
 
   if (!patient) {
     return (
@@ -281,13 +273,7 @@ export const PatientPortal: React.FC = () => {
   };
 
   const handleSignOut = async () => {
-    try {
-      if (apiReady) await api.logout();
-    } catch {
-      /* ignore */
-    }
-    clearPatientSession();
-    setSession(null);
+    await authLogout();
   };
 
   const startEditProfile = () => {
@@ -433,7 +419,7 @@ export const PatientPortal: React.FC = () => {
             MRN {patient.mrn}
           </span>
           <span className="inline-flex items-center px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400">
-            Signed in as {session.email}
+            Signed in as {authUser?.email}
           </span>
         </div>
 

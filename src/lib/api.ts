@@ -52,6 +52,17 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
+  register: (body: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    phone?: string;
+  }) =>
+    request<{ token: string; user: ApiUser }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   logout: () => request<{ ok: boolean }>('/auth/logout', { method: 'POST' }),
   me: () => request<ApiUser>('/auth/me'),
   listPatients: () => request<Record<string, unknown>[]>('/patients'),

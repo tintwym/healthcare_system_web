@@ -23,7 +23,7 @@ import {
   DischargeSummary,
   OfflineCacheStatus,
 } from '../types';
-import { readStaffUser } from '../components/staff/StaffApiLogin';
+import { readAuthUser } from '../lib/authSession';
 import {
   syncCriticalClinicalData,
   subscribeOnlineStatus,
@@ -202,7 +202,7 @@ const GUEST_USER: User = {
 
 export const HospitalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [users, setUsers] = useState<User[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string>(() => readStaffUser()?.id || 'guest');
+  const [currentUserId, setCurrentUserId] = useState<string>(() => readAuthUser()?.id || 'guest');
   const [apiConnected, setApiConnected] = useState(false);
   const [isMfaAuthenticated, setIsMfaAuthenticated] = useState<boolean>(true);
   const [mfaModalOpen, setMfaModalOpen] = useState<boolean>(false);

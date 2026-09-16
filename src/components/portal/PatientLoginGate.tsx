@@ -35,7 +35,6 @@ export function writePatientSession(session: PatientSession) {
 
 export function clearPatientSession() {
   sessionStorage.removeItem(PATIENT_SESSION_KEY);
-  setApiToken(null);
 }
 
 interface PatientLoginGateProps {

@@ -3,7 +3,6 @@ import {
   Bell,
   Smartphone,
   AlertTriangle,
-  UserCheck,
   Lock,
   ChevronDown,
   Eye,
@@ -15,6 +14,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useHospital } from '../context/HospitalContext';
+import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 interface HeaderProps {
@@ -30,10 +30,9 @@ export const Header: React.FC<HeaderProps> = ({
   activeTabTitle = 'Dashboard',
   onToggleMobileSidebar,
 }) => {
+  const { user: authUser, logout } = useAuth();
   const {
     currentUser,
-    users,
-    switchUser,
     isMfaAuthenticated,
     requestMfaChallenge,
     deIdentifyPhi,
@@ -267,58 +266,18 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 </div>
 
-                <div className="px-3 pt-2 pb-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                    Switch user
-                  </p>
-                </div>
-
-                <div className="max-h-56 overflow-y-auto py-1">
-                  {users.map((u) => {
-                    const isSelected = u.id === currentUser.id;
-                    return (
-                      <button
-                        key={u.id}
-                        id={`switch-user-${u.role}`}
-                        role="menuitem"
-                        onClick={() => {
-                          switchUser(u.id);
-                          setRoleMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 flex items-center gap-3 transition-colors ${
-                          isSelected
-                            ? 'bg-teal-50 text-teal-950 dark:bg-teal-950/40 dark:text-teal-100'
-                            : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200'
-                        }`}
-                      >
-                        <img
-                          src={u.avatarUrl}
-                          alt=""
-                          className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-600"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                              {u.name}
-                            </p>
-                            <span
-                              className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border shrink-0 ${getRoleBadgeColor(
-                                u.role
-                              )}`}
-                            >
-                              {u.role}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                            {u.department}
-                          </p>
-                        </div>
-                        {isSelected && (
-                          <UserCheck className="h-4 w-4 text-teal-600 dark:text-teal-400 shrink-0" />
-                        )}
-                      </button>
-                    );
-                  })}
+                <div className="py-1 border-t border-slate-100 dark:border-slate-700">
+                  <button
+                    role="menuitem"
+                    onClick={() => {
+                      void logout();
+                      setRoleMenuOpen(false);
+                    }}
+                    className="w-full px-3 py-2 flex items-center gap-2.5 text-left text-xs text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                  >
+                    <Lock className="h-4 w-4 shrink-0" />
+                    <span className="flex-1">Sign out ({authUser?.email || currentUser.email})</span>
+                  </button>
                 </div>
               </div>
             </>

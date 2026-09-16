@@ -8,7 +8,7 @@ import {
   mapApiPatient,
   mapApiUser,
 } from '../lib/apiMappers';
-import { readStaffUser } from '../components/staff/StaffApiLogin';
+import { readAuthUser } from '../lib/authSession';
 import { useHospital } from './HospitalContext';
 
 /** Loads live clinical data from the Medicore API into HospitalContext when staff is signed in. */
@@ -25,7 +25,7 @@ export const HospitalApiBridge: React.FC<{ children: React.ReactNode }> = ({ chi
     if (busy.current) return;
     busy.current = true;
     try {
-      const staff = readStaffUser();
+      const staff = readAuthUser();
       const role = staff?.role;
       const isPatient = role === 'patient';
 

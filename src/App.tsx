@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { HospitalProvider, useHospital } from './context/HospitalContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { HospitalApiBridge } from './context/HospitalApiBridge';
+import { AuthScreen } from './components/auth/AuthScreen';
 import { Header } from './components/Header';
 import { Sidebar, TabType } from './components/Sidebar';
 import { AdminOverview } from './components/dashboard/AdminOverview';
@@ -34,6 +36,7 @@ import {
 } from 'lucide-react';
 
 const HospitalAppContent: React.FC = () => {
+  const { user: authUser } = useAuth();
   const {
     currentUser,
     unreadAlertCount,
@@ -54,6 +57,16 @@ const HospitalAppContent: React.FC = () => {
   const [emergencyCode, setEmergencyCode] = useState('Code Blue (Cardiac Arrest)');
   const [emergencyLocation, setEmergencyLocation] = useState('ICU Bed 04 - East Wing');
   const [emergencyBroadcasting, setEmergencyBroadcasting] = useState(false);
+
+  // Route to role-appropriate home after sign-in
+  React.useEffect(() => {
+    const role = authUser?.role || currentUser.role;
+    if (role === 'patient') {
+      setActiveTab('patient-portal');
+    } else if (role === 'pharmacist') {
+      setActiveTab('pharmacy');
+    }
+  }, [authUser?.id]);
 
   // If user role switches to patient or pharmacist, automatically switch to role-relevant view if on restricted tab
   React.useEffect(() => {
@@ -429,13 +442,35 @@ const HospitalAppContent: React.FC = () => {
   );
 };
 
+const AuthenticatedApp: React.FC = () => {
+  const { isAuthenticated, bootstrapping } = useAuth();
+
+  if (bootstrapping) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--mc-bg)]">
+        <div className="text-sm text-slate-500 dark:text-slate-400 animate-pulse">Loading Medicore…</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthScreen />;
+  }
+
+  return (
+    <HospitalApiBridge>
+      <HospitalAppContent />
+    </HospitalApiBridge>
+  );
+};
+
 export default function App() {
   return (
     <ThemeProvider>
       <HospitalProvider>
-        <HospitalApiBridge>
-          <HospitalAppContent />
-        </HospitalApiBridge>
+        <AuthProvider>
+          <AuthenticatedApp />
+        </AuthProvider>
       </HospitalProvider>
     </ThemeProvider>
   );
