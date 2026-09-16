@@ -19,6 +19,7 @@ import { StaffDirectory } from './components/staff/StaffDirectory';
 import { RadiologyImaging } from './components/radiology/RadiologyImaging';
 import { DischargeSummaryTool } from './components/discharge/DischargeSummaryTool';
 import { CareContinuityPanel } from './components/care/CareContinuityPanel';
+import { AiAssistant } from './components/ai/AiAssistant';
 import { AnimatedPage } from './components/ui/AnimatedPage';
 import { MfaModal } from './components/mfa/MfaModal';
 import { SessionTimeoutGuard } from './components/security/SessionTimeoutGuard';
@@ -56,11 +57,11 @@ const HospitalAppContent: React.FC = () => {
   // If user role switches to patient or pharmacist, automatically switch to role-relevant view if on restricted tab
   React.useEffect(() => {
     if (currentUser.role === 'patient') {
-      if (!['appointments', 'billing', 'messages', 'patient-portal', 'mobile-portal', 'staff-directory'].includes(activeTab)) {
+      if (!['appointments', 'billing', 'messages', 'patient-portal', 'mobile-portal', 'staff-directory', 'ai'].includes(activeTab)) {
         setActiveTab('patient-portal');
       }
     } else if (currentUser.role === 'pharmacist') {
-      if (!['pharmacy', 'patients', 'vitals', 'cds', 'appointments', 'messages', 'hipaa', 'shift-planning', 'staff-directory', 'care-loop'].includes(activeTab)) {
+      if (!['pharmacy', 'patients', 'vitals', 'cds', 'ai', 'appointments', 'messages', 'hipaa', 'shift-planning', 'staff-directory', 'care-loop'].includes(activeTab)) {
         setActiveTab('pharmacy');
       }
     }
@@ -108,6 +109,7 @@ const HospitalAppContent: React.FC = () => {
     patients: 'Patients',
     pharmacy: 'Pharmacy',
     cds: 'Decision Support',
+    ai: 'Medicore Assist',
     'shift-planning': 'Shift Planning',
     'staff-directory': 'Care Team',
     radiology: 'Radiology',
@@ -185,6 +187,7 @@ const HospitalAppContent: React.FC = () => {
               {activeTab === 'patients' && <PatientRecords />}
               {activeTab === 'pharmacy' && <PharmacistDashboard />}
               {activeTab === 'cds' && <ClinicalDecisionSupport />}
+              {activeTab === 'ai' && <AiAssistant />}
               {activeTab === 'shift-planning' && <ShiftPlanningDashboard />}
               {activeTab === 'staff-directory' && (
                 <StaffDirectory

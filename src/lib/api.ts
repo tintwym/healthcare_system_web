@@ -134,6 +134,22 @@ export const api = {
   fhirImport: (bundle: unknown) =>
     request<unknown>('/fhir/Bundle', { method: 'POST', body: JSON.stringify(bundle) }),
   fhirLogs: () => request<unknown[]>('/fhir/logs'),
+  aiStatus: () =>
+    request<{
+      enabled: boolean;
+      configured: boolean;
+      provider: string;
+      model: string;
+      disclaimer: string;
+    }>('/ai/status'),
+  aiAssist: (body: { message: string; intent?: string; patientId?: string; context?: string }) =>
+    request<{
+      reply: string;
+      intent: string;
+      provider: string;
+      patientId?: string | null;
+      disclaimer: string;
+    }>('/ai/assist', { method: 'POST', body: JSON.stringify(body) }),
   registerDevice: (platform: 'EXPO' | 'WEB', token: string | Record<string, unknown> | object) =>
     request('/devices/register', {
       method: 'POST',

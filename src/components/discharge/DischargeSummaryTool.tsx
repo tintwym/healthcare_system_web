@@ -15,11 +15,15 @@ import {
   Eye,
   RefreshCw,
   Building2,
+  Sparkles,
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { useHospital } from '../../context/HospitalContext';
 import { McSelect } from '../ui/McSelect';
 import { DischargeSummary, PatientRecord } from '../../types';
+import { StaffApiLogin } from '../staff/StaffApiLogin';
+import { api, getApiToken } from '../../lib/api';
+import { parseSummaryDraft } from '../../lib/aiParse';
 
 function buildDraftFromPatient(
   patient: PatientRecord,
@@ -47,7 +51,7 @@ function buildDraftFromPatient(
     ].slice(0, 4),
     hospitalCourse:
       latestNote?.soapSubjective ||
-      `Patient was admitted under ${patient.primaryDoctor} for management of MMK {
+      `Patient was admitted under ${patient.primaryDoctor} for management of ${
         patient.chronicConditions.join(', ') || 'acute illness'
       }. Clinical course was monitored with serial vitals and laboratory assessment. Condition improved sufficiently for safe discharge to home with outpatient follow-up.`,
     proceduresPerformed: patient.labResults
@@ -120,6 +124,7 @@ export const DischargeSummaryTool: React.FC = () => {
     existing[0]?.id ?? null
   );
   const [isGenerating, setIsGenerating] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const selectedSummary =
@@ -142,6 +147,57 @@ export const DischargeSummaryTool: React.FC = () => {
     if (!patient) return;
     setDraft(buildDraftFromPatient(patient, currentUser.name));
     showToast('Draft refreshed from current EHR, medications, and visit notes.');
+  };
+
+  const handleAiDraft = async () => {
+    if (!patient || !draft) return;
+    if (!getApiToken()) {
+      showToast('Sign in to the Medicore API below to use Assist.');
+      return;
+    }
+    setAiBusy(true);
+    try {
+      const chartSnippet = [
+        `Admitting: ${draft.admittingDiagnosis}`,
+        `Conditions: ${patient.chronicConditions.join(', ') || 'n/a'}`,
+        `Allergies: ${patient.allergies.join(', ') || 'NKDA'}`,
+        `Active meds: ${patient.medications
+          .filter((m) => m.status === 'active')
+          .map((m) => `${m.name} ${m.dosage}`)
+          .join('; ') || 'none'}`,
+        `Latest note assessment: ${patient.clinicalNotes[0]?.soapAssessment || 'n/a'}`,
+        `Latest note plan: ${patient.clinicalNotes[0]?.soapPlan || 'n/a'}`,
+        `Current hospital course draft: ${draft.hospitalCourse.slice(0, 800)}`,
+      ].join('\n');
+
+      const result = await api.aiAssist({
+        message:
+          'Rewrite a clinician-ready discharge summary from the chart context. Keep facts grounded; do not invent procedures or meds.',
+        intent: 'draft_summary',
+        patientId: patient.id,
+        context: chartSnippet,
+      });
+      const parsed = parseSummaryDraft(result.reply);
+      setDraft({
+        ...draft,
+        hospitalCourse: parsed.course || draft.hospitalCourse,
+        followUpInstructions: parsed.instructions || draft.followUpInstructions,
+        warningSignsToReturn:
+          parsed.warnings.length > 0 ? parsed.warnings : draft.warningSignsToReturn,
+      });
+      logAudit(
+        'AI_ASSIST',
+        `AI discharge draft for ${patient.firstName} ${patient.lastName}`,
+        `Assist draft_summary via ${result.provider}`,
+        patient.id,
+        `${patient.firstName} ${patient.lastName}`
+      );
+      showToast(`AI draft applied (${result.provider}). Review before generating.`);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'AI draft failed');
+    } finally {
+      setAiBusy(false);
+    }
   };
 
   const handleGenerate = () => {
@@ -317,6 +373,14 @@ export const DischargeSummaryTool: React.FC = () => {
           <RefreshCw className="h-3.5 w-3.5" /> Refresh from EHR
         </button>
         <button
+          onClick={() => void handleAiDraft()}
+          disabled={aiBusy}
+          className="px-3 py-2 rounded-lg border border-teal-400/40 bg-teal-500/10 text-teal-800 dark:text-teal-200 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          {aiBusy ? 'Assist drafting…' : 'Generate with AI'}
+        </button>
+        <button
           onClick={handleGenerate}
           disabled={isGenerating}
           className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50"
@@ -325,6 +389,11 @@ export const DischargeSummaryTool: React.FC = () => {
           {isGenerating ? 'Generating…' : 'Generate Draft Summary'}
         </button>
       </div>
+
+      <StaffApiLogin
+        allowedRoles={['admin', 'doctor', 'nurse']}
+        defaultEmail="dr.chen@medicore.mm"
+      />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Draft editor */}

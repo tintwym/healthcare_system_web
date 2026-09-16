@@ -182,7 +182,8 @@ export interface AuditLog {
     | 'GENERATE_DISCHARGE_SUMMARY'
     | 'VIEW_DICOM'
     | 'ANNOTATE_DICOM'
-    | 'OFFLINE_CACHE_SYNC';
+    | 'OFFLINE_CACHE_SYNC'
+    | 'AI_ASSIST';
   resource: string;
   patientId?: string;
   patientName?: string;

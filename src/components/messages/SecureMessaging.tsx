@@ -10,9 +10,13 @@ import {
   Users,
   UserRound,
   X,
+  Sparkles,
 } from 'lucide-react';
 import { useHospital } from '../../context/HospitalContext';
 import { UserRole } from '../../types';
+import { api, getApiToken } from '../../lib/api';
+import { parseMessageDraft } from '../../lib/aiParse';
+import { StaffApiLogin } from '../staff/StaffApiLogin';
 
 type RoleFilter = 'all' | UserRole;
 
@@ -26,6 +30,8 @@ export const SecureMessaging: React.FC = () => {
     markMessageRead,
     activeMessageRecipientId,
     setActiveMessageRecipientId,
+    selectedPatientId,
+    logAudit,
   } = useHospital();
 
   const [selectedRecipientId, setSelectedRecipientId] = useState<string>(
@@ -35,6 +41,8 @@ export const SecureMessaging: React.FC = () => {
   const [isUrgent, setIsUrgent] = useState<boolean>(false);
   const [filterQuery, setFilterQuery] = useState<string>('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeMessageRecipientId) {
@@ -141,6 +149,42 @@ export const SecureMessaging: React.FC = () => {
 
   const handleTemplateClick = (text: string) => {
     setMessageText(text);
+  };
+
+  const handleAiSuggest = async () => {
+    if (aiBusy) return;
+    if (!getApiToken()) {
+      setAiError('Sign in to the Medicore API (below) to use Assist suggestions.');
+      return;
+    }
+    setAiBusy(true);
+    setAiError(null);
+    try {
+      const recent = conversation
+        .slice(-8)
+        .map((m) => `${m.senderName}: ${m.body}`)
+        .join('\n');
+      const result = await api.aiAssist({
+        message: currentUser.role === 'patient'
+          ? 'Draft a short message I can send in this care conversation.'
+          : 'Draft a concise professional reply for this secure clinical thread. Do not invent orders or results.',
+        intent: 'draft_message',
+        patientId: currentUser.role === 'patient' ? undefined : selectedPatientId || undefined,
+        context: `Thread with ${activeRecipient.name} (${activeRecipient.role}). Recent messages:\n${recent || '(empty thread)'}`,
+      });
+      setMessageText(parseMessageDraft(result.reply));
+      logAudit(
+        'AI_ASSIST',
+        `AI message draft to ${activeRecipient.name}`,
+        `Assist draft_message via ${result.provider}`,
+        selectedPatientId || undefined,
+        undefined
+      );
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : 'AI suggestion failed');
+    } finally {
+      setAiBusy(false);
+    }
   };
 
   const roleChips: { id: RoleFilter; label: string }[] = [
@@ -382,6 +426,15 @@ export const SecureMessaging: React.FC = () => {
           </div>
 
           <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 flex items-center space-x-2 overflow-x-auto text-[11px]">
+            <button
+              type="button"
+              disabled={aiBusy}
+              onClick={() => void handleAiSuggest()}
+              className="shrink-0 px-2.5 py-1 rounded-full bg-teal-500/15 text-teal-800 dark:text-teal-200 border border-teal-500/30 font-semibold flex items-center gap-1 disabled:opacity-50"
+            >
+              <Sparkles className="h-3 w-3" />
+              {aiBusy ? 'Suggesting…' : 'Suggest with AI'}
+            </button>
             {[
               'Please review latest labs before rounds.',
               'Patient requesting medication clarification.',
@@ -397,6 +450,19 @@ export const SecureMessaging: React.FC = () => {
               </button>
             ))}
           </div>
+
+          {aiError && (
+            <div className="px-4 pb-1 text-[11px] text-rose-600 dark:text-rose-300">{aiError}</div>
+          )}
+
+          {currentUser.role !== 'patient' && (
+            <div className="px-4 pb-2">
+              <StaffApiLogin
+                allowedRoles={['admin', 'doctor', 'nurse', 'pharmacist', 'billing']}
+                defaultEmail="dr.chen@medicore.mm"
+              />
+            </div>
+          )}
 
           <form
             onSubmit={handleSend}

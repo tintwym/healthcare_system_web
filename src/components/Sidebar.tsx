@@ -13,6 +13,7 @@ import {
   Lock,
   Pill,
   Brain,
+  Sparkles,
   UserCheck,
   CalendarCheck,
   Contact,
@@ -33,6 +34,7 @@ export type TabType =
   | 'patients'
   | 'pharmacy'
   | 'cds'
+  | 'ai'
   | 'shift-planning'
   | 'staff-directory'
   | 'radiology'
@@ -131,6 +133,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           subtitle: 'Guidelines & alerts',
           icon: Brain,
           allowedRoles: ['doctor', 'nurse', 'pharmacist', 'admin'],
+        },
+        {
+          id: 'ai',
+          label: 'Medicore Assist',
+          subtitle: 'AI drafts & explainers',
+          icon: Sparkles,
+          allowedRoles: ['admin', 'doctor', 'nurse', 'pharmacist', 'billing', 'patient'],
+          badge: 'AI',
+          badgeColor: 'bg-teal-500/20 text-teal-300',
         },
         {
           id: 'discharge',
